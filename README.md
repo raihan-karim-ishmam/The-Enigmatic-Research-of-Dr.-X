@@ -280,6 +280,11 @@ Develop a flexible, scalable, and local Retrieval-Augmented Generation (RAG) sys
 - Final average CPU response time:  
   - ~15–30 seconds for Flan models  
   - ~30+ seconds for LLaMA 7B quantized GGML model
+- Despite hardware constraints and quantized model usage, the system consistently delivered **challenging, grounded answers** with an estimated **accuracy above 50%** on complex, publication-level questions.
+
+> **🔒 Pipeline Focus:**  
+> The primary objective was to demonstrate **how to architect a fully working offline RAG system**, not merely to optimize model answering depth.  
+> Model switching is easily achievable with **one-line code edits and a corresponding model download**.
 
 ---
 
@@ -313,6 +318,24 @@ Develop a flexible, scalable, and local Retrieval-Augmented Generation (RAG) sys
 - **🔎 Enhanced Retrieval**:
   - Combine semantic retrieval with keyword matching (hybrid search)
   - Introduce query rewriting for better chunk matching
+
+---
+
+## 📦 Download the LLaMA 2 Model
+
+To use the system with Meta’s **LLaMA-2-7B-Chat** in local mode, download the GGML model manually as follows:
+
+1. Download the model file `llama-2-7b-chat.ggmlv3.q4_0.bin` from the following link:  
+   👉 [Llama 2 GGML Model on HuggingFace](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/tree/main)
+
+2. Create a folder named `models/` in the project root (if it doesn’t exist).
+
+3. Place the downloaded `.bin` file inside the `models/` folder.
+
+4. You’re now ready to run `llama.py` for full offline inference.
+
+> 📄 NB: A `instructions.md` file with these steps is also included in the `models/` directory.
+
 
 ---
 
