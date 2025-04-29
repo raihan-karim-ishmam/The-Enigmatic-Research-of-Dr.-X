@@ -210,6 +210,7 @@ This provides transparency on system efficiency and allows easy benchmarking for
 ---
 
 
+
 # Phase 4: RAG Q&A System Development
 
 ## Objective
@@ -335,6 +336,155 @@ To use the system with Meta’s **LLaMA-2-7B-Chat** in local mode, download the 
 4. You’re now ready to run `llama.py` for full offline inference.
 
 > 📄 NB: A `instructions.md` file with these steps is also included in the `models/` directory.
+
+
+---
+
+# Phase 6: Document Summarization & Evaluation
+
+## Objective
+
+Develop a local, intelligent summarization pipeline capable of processing `.pdf`, `.docx`, and `.txt` documents using a lightweight offline LLM, while providing automated performance metrics through ROUGE evaluation.
+
+---
+
+## Technologies Used
+
+- `LangChain` document loaders (`PyPDFLoader`, `Docx2txtLoader`, `TextLoader`)
+- `RecursiveCharacterTextSplitter`
+- `transformers.pipeline` (summarization)
+- `evaluate` (ROUGE scoring)
+- `matplotlib`, `tqdm` (visuals and performance feedback)
+- Local model: `LaMini-Flan-T5-248M`
+
+---
+
+## Structure and Scripts
+
+- `summarizer.py`: Full pipeline to:
+  - Load & chunk `.pdf`, `.docx`, or `.txt` files
+  - Generate summaries via local LLM
+  - Evaluate each summary with ROUGE
+  - Log performance data (tokens, speed)
+  - Store all outputs and metrics
+
+- Outputs:
+  - Summaries → `summaries/`
+  - ROUGE scores → `rouge_metrics/`
+  - Logs → `performance_log.txt`
+
+---
+
+## Model Integration and Experimentation
+
+### 🔍 Model Evaluation History
+
+- **LLaMA-2 GGML (7B)**:
+  - Operated locally but required extreme chunking due to 4096 token context limit.
+  - Output quality was poor; summaries lacked coherence due to fragmented input.
+
+- **TinyLLaMA (248M, GGUF)**:
+  - Fast and lightweight, but context size (512 tokens) was too constrained.
+  - Often returned incomplete or malformed summaries.
+
+- **Final Model: LaMini-Flan-T5-248M**:
+  - Recently released, HuggingFace-hosted offline model.
+  - Balanced performance with low memory footprint (~16GB RAM).
+  - Delivered the best ROUGE scores in local tests.
+
+> **💡 Why LaMini-Flan?**  
+> Staying current with model releases is a vital skill in real-world AI work. This model allowed us to demonstrate real-time adaptability while remaining fully offline.
+
+---
+
+## Engineering Approach
+
+### 🛠️ Pipeline Enhancements
+
+- **Hybrid Loader System**: Supports summarization from `.pdf`, `.docx`, or `.txt` using LangChain’s intelligent loaders.
+- **Chunking Strategy**: Text is split using `RecursiveCharacterTextSplitter` to respect semantic flow while staying under model context limits.
+- **Summarization Engine**: Used HuggingFace `transformers.pipeline` with max length capped at 500 tokens.
+- **ROUGE Scoring**: Each generated summary is automatically evaluated and stored alongside its source document.
+- **Performance Logging**: Summary time and token throughput are logged to `performance_log.txt`.
+
+> **🧠 Key Insight:**  
+> The summarizer performed **significantly better on documents with plain, paragraph-style content**, rather than those filled with slide numbers, internal links, or bullet-point formatting. This is likely due to better tokenization consistency and more natural semantic flow for the LLM to follow.
+
+---
+
+## Results
+
+### 📊 ROUGE Score Summary (Top 4 Test Sets)
+
+| Test Set    | ROUGE-1 | ROUGE-2 | ROUGE-L |
+|-------------|----------|----------|----------|
+| Test Set 1  | 0.4686   | 0.3884   | 0.4278   |
+| Test Set 2  | 0.1594   | 0.1364   | 0.1375   |
+| Test Set 3  | 0.3251   | 0.2243   | 0.2995   |
+| Test Set 4  | 0.4178   | 0.3152   | 0.3891   |
+
+> ✅ These results fall within the **ideal mid-range** — not too low (which would indicate lack of coherence), but also not unnaturally high (which can signal hallucination or overfitting). This indicates the summaries are **realistic, faithful, and appropriately concise**.
+
+### 📈 Visual Representation
+
+![Summarization ROUGE Scores](output.png)
+
+ROUGE scores are automatically saved per document in the `rouge_metrics/` folder, with each `.txt` file containing all metrics.
+
+---
+
+## Performance
+
+- Supports summarization of **multiple documents** in batch.
+- All **summaries + ROUGE + logs** saved automatically.
+- Performance tracked:
+  - Total tokens processed
+  - Total time taken
+  - Summarization speed (tokens/second)
+- Logged to: `performance_log.txt`
+
+---
+
+## Limitations and Local Constraints
+
+- **Hardware**: 
+  - CPU-only inference, no GPU usage
+  - 16GB RAM constraint
+- **Token Warning**:
+  - Token overflow handled gracefully with warnings, not crashes
+- **Scaling Needs**:
+  - Long documents may require re-chunking or larger models
+- **Professional Outlook**:
+  - With more compute (e.g., 48GB VRAM), models like `flan-t5-xl` or `LLaMA-13B` could improve both accuracy and processing time
+
+---
+
+## Future Improvements
+
+- **Model Upgrades**:  
+  - Swap in more powerful offline models with larger token limits
+  - Fine-tune for domain-specific summarization (e.g., academic or legal)
+
+- **Cloud & API Mode (optional)**:  
+  - If external APIs are allowed, results can improve instantly via models like GPT-4, Claude, or Cohere
+
+---
+
+## 📦 Download the LaMini-Flan-T5 Model
+
+To run this module offline, you must manually download the full `LaMini-Flan-T5-248M` model from HuggingFace:
+
+1. Download the folder from:  
+   👉 [LaMini-Flan-T5-248M on HuggingFace](https://huggingface.co/MBZUAI/LaMini-Flan-T5-248M)
+
+2. Save it in 
+```bash 
+models/LaMini-Flan-T5-248M/
+```
+
+3. Ensure both the `pytorch_model.bin` and tokenizer files are inside the folder.
+
+4. You’re now ready to run `summarizer.py` completely offline.
 
 
 ---
