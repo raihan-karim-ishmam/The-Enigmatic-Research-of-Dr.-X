@@ -103,6 +103,7 @@ To serve different downstream needs, **three parallel output modes** were engine
 - Established a **clean, traceable baseline** for Phase 2 chunking and semantic embedding.
 - Optimized for both **human legibility** and **NLP-readiness**.
 
+
 ---
 
 
@@ -152,60 +153,54 @@ This metadata-driven design ensures **traceability**, **easy reassembly**, and *
 - Generated chunks are **optimized for semantic embedding**, **retrieval**, and **question answering tasks**.
 - Established a **tokenization-consistent** foundation critical for later phases (embedding generation and RAG system construction).
 
----
+# Phase 3: Embedding & Vector Database Construction
 
+## Objective
 
-## 🧩 Phase 3: Embedding & Vector Database Construction
+Generate dense, normalized semantic embeddings for each chunk and store them in a FAISS vector database for fast similarity search — forming the foundation for the Retrieval-Augmented Generation (RAG) system.
 
-### 🎯 Objective
-
-Generate dense, normalized semantic embeddings for each chunk and store them in a **FAISS** vector database to enable fast and accurate semantic similarity search — forming the core of the Retrieval-Augmented Generation (RAG) system.
-
----
-
-### ⚙️ Technologies Used
+## Technologies Used
 
 - `HuggingFace Transformers` (`nomic-embed-text-v1`)
 - `faiss-cpu`
-- `torch`, `numpy`
+- `torch`
+- `numpy`
 
----
+## Engineering Approach
 
-### 🧠 Engineering Approach
+### Embedding Generation
 
-Phase 3 was dedicated to building an efficient and scalable vector-based retrieval foundation.
+- Used `nomic-embed-text-v1`, a strong general-purpose embedding model, suitable for scientific and multi-domain documents.
+- Applied mean pooling across the final hidden states to generate dense semantic vectors for each chunk.
 
-#### 📚 Embedding Generation
-- Leveraged `nomic-embed-text-v1` model for generating efficient, general-purpose embeddings suitable for a wide range of scientific and technical domains.
-- Applied **mean pooling** over the last hidden states to obtain a dense and representative semantic vector for each chunk.
+### L2-Normalization for Similarity Search
 
-#### 🔵 L2-Normalization for Stable Similarity Search
-- Embedding vectors were L2-normalized before indexing to ensure **stable cosine similarity** behavior during search.
-- This normalization improves retrieval robustness, particularly when dealing with variable-length input text.
+- Embedding vectors were L2-normalized prior to indexing.
+- This ensured stable cosine similarity behavior during retrieval, improving robustness across variable-length inputs.
 
-#### 🛠️ Vector Database Construction
-- FAISS (`faiss-cpu`) was selected to ensure fast, scalable, and offline semantic search capability.
-- **Separation of Storage**:
-  - FAISS index: stores only the raw vectors.
-  - External `metadata.json`: stores corresponding metadata (filename, page, chunk_id, and text).
-- This modular storage design promotes **easy future expansion**, **metadata refresh** without re-embedding, and **clear system maintainability**.
+### Vector Database Construction
 
-> 💡 **Design Insight:** Separating embeddings from metadata aligns with best practices for scalable information retrieval systems, reducing database fragility and enhancing update flexibility.
+- Built the vector database using `faiss-cpu`, selected for its speed, reliability, and full offline capability.
+- Storage strategy was deliberately separated:
+  - **FAISS Index**: Stores dense vector representations.
+  - **External Metadata File**: Stores associated metadata (filename, page, chunk_id, text) in a structured `metadata.json`.
 
-#### 📈 Performance Logging
-- Full performance metrics were recorded during the embedding process:
+> **Design Insight:** This separation between vectors and metadata allows for scalable system upgrades without needing full re-indexing when only metadata changes.
+
+### Performance Logging
+
+- Full performance metrics were logged during the embedding phase:
   - Total tokens embedded
-  - Embedding time
-  - Tokens processed per second
-- These logs provide **transparent insight** into system efficiency and facilitate optimization if scaling up.
+  - Time taken
+  - Embedding speed (tokens processed per second)
 
----
+This provides transparency on system efficiency and allows easy benchmarking for future scaling.
 
-### ✅ Outcome
+## Outcome
 
-- Successfully created a **fully populated FAISS database**, operational locally and optimized for RAG pipelines.
-- Built a **transparent, performance-logged embedding layer** that ensures future scalability and operational clarity.
-- Maintained full traceability and reproducibility through externalized metadata.
+- Successfully created a fully populated, locally-operational FAISS vector database.
+- Built a modular, transparent, and performance-logged embedding layer.
+- Ensured future scalability, allowing for easy expansions, metadata refreshes, and optimizations.
 
 ---
 
