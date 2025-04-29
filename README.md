@@ -106,25 +106,54 @@ To serve different downstream needs, **three parallel output modes** were engine
 ---
 
 
-# Phase 2: Chunking & Metadata Structuring
+## 🧩 Phase 2: Chunking & Metadata Structuring
 
-## Objective
+### 🎯 Objective
 
-Segment extracted text into manageable, semantically meaningful chunks while preserving origin metadata (file, page, chunk ID).
-
-## Technologies Used
-- tiktoken (`cl100k_base` tokenizer)
-- JSON structured outputs
-
-## Approach
-- Token-based chunking to maintain semantic integrity (~500 tokens).
-- Dynamic handling of oversized pages through truncation safety fallback.
-- Full metadata recording: filename, page, chunk_id.
-
-## Outcome
-- Produced structured JSON outputs ready for efficient semantic embedding and retrieval.
+Segment the extracted text into manageable, semantically meaningful chunks while preserving origin metadata, including filename, page number, and chunk ID — preparing the dataset for efficient embedding and retrieval workflows.
 
 ---
+
+### ⚙️ Technologies Used
+
+- `tiktoken` (`cl100k_base` tokenizer)  
+- Structured `JSON` outputs
+
+---
+
+### 🧠 Engineering Approach
+
+The chunking strategy was designed with a strong focus on **semantic integrity** while respecting **token constraints** required for downstream LLM usage.
+
+#### 📚 Token-Based Chunking
+- Text was tokenized using `cl100k_base`, ensuring compatibility with modern models like GPT-4 and GPT-3.5.
+- Targeted chunk size: approximately **500 tokens** per chunk — balancing context richness with performance.
+
+#### 🛡️ Safety Fallbacks
+- Dynamic handling of oversized pages:
+  - If a single page's text exceeded the maximum token limit, it was **safely split** into multiple chunks without losing important context boundaries.
+
+#### 📋 Full Metadata Structuring
+Every chunk carries the following metadata:
+- `filename`: Source file of the chunk
+- `page`: Page number from where the chunk originated
+- `chunk_id`: Sequential ID for traceability
+- `text`: Chunk content (cleaned and token-bounded)
+
+This metadata-driven design ensures **traceability**, **easy reassembly**, and **fine-grained retrieval** in future stages.
+
+> 💡 **Design Insight:** By embedding detailed metadata early at the chunking stage, the pipeline remains modular and scalable for advanced features like search relevance scoring, result backtracking, and explainability.
+
+---
+
+### ✅ Outcome
+
+- Successfully produced **structured and metadata-rich JSON outputs**.
+- Generated chunks are **optimized for semantic embedding**, **retrieval**, and **question answering tasks**.
+- Established a **tokenization-consistent** foundation critical for later phases (embedding generation and RAG system construction).
+
+---
+
 
 # Phase 3: Embedding & Vector Database Construction
 
