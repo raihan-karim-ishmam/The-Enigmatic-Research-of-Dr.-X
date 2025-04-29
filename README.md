@@ -214,51 +214,108 @@ This provides transparency on system efficiency and allows easy benchmarking for
 
 ## Objective
 
-Develop a flexible, scalable, and local Retrieval-Augmented Generation (RAG) system capable of answering queries grounded in Dr. X's publications.
+Develop a flexible, scalable, and local Retrieval-Augmented Generation (RAG) system capable of answering queries grounded in Dr. X's publications, fully operational on minimal hardware resources without reliance on external APIs.
+
+## Technologies Used
+
+- `HuggingFace Transformers`
+- `faiss-cpu`
+- `torch`
+- `ctransformers` (for running local LLaMA-2 models)
+- `nomic-embed-text-v1` (embedding model)
+- `flan-t5-small`, `flan-t5-base`, `flan-t5-large` (switchable)
+- `LLaMA-2-7B-Chat` (quantized GGML format)
 
 ## Structure and Scripts
-- `rag1.py`: Basic RAG system without advanced truncation.
-- `rag2.py`: Smart RAG system with dynamic token-budgeting, better prompt construction, and context truncation handling.
-- `llama.py`: Specialized system leveraging Meta's LLaMA-2 7B-chat model in GGML format for local inference.
 
-## LLM Integration
+- `rag.py`: Base RAG system with Flan-T5 answering and static prompt context.
+- `rag2.py`: Enhanced system with dynamic token-budgeting, tokenizer-safe truncation, and better prompt engineering.
+- `llama.py`: Offline-only RAG system using the locally quantized Meta `LLaMA-2-7B-Chat` model (GGML) via `ctransformers`.
 
-- **Meta’s LLaMA 2 Model**: Used in GGML format to support limited hardware.
-- **Conversational Retrieval Chain**: Combined semantic vector retrieval and context-aware generation.
-- **Token Optimization**: Dynamic chunking and controlled prompt budgets.
+---
 
-## Why GGML Format?
+## LLM Integration and Model Choices
 
-- Full LLaMA models require 30–50 GB VRAM; GGML compresses to ~6 GB RAM usage.
-- Achieved efficient offline operation without expensive hardware.
-- Demonstrates scalable engineering foresight.
+### 📚 Model Choices and Reasoning
 
-## Download the LLaMA 2 Model
+- **Flan-T5 Series** (`small`, `base`, `large`): Used for early development and testing due to their instruction-following capability and ability to run on CPUs with minimal memory (especially `flan-t5-small`).
+- **Meta LLaMA-2-7B-Chat (GGML)**: Chosen for full local operation, with no external dependencies. The model was downloaded in `ggmlv3.q4_0.bin` quantized format to allow CPU-based inference under 16GB RAM.
 
-To run `rag_llama.py`:
+> **💡 Installation Note:**  
+> To use LLaMA locally, manually download `llama-2-7b-chat.ggmlv3.q4_0.bin` and place it in a `models/` directory. The system does not auto-download models to preserve disk space and maintain a lightweight, offline setup.
 
-1. Download `llama-2-7b-chat.ggmlv3.q4_0.bin` from:
-   > [HuggingFace - TheBloke LLaMA-2-7B-Chat-GGML](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/tree/main)
-2. Save inside `/models` directory.
-3. Follow `instructions.md` inside `/models` for setup help.
+---
 
-## Evaluation Results
+## Engineering Approach
 
-| Model | RAG Version | Mixed Docs Accuracy | Single Doc Accuracy |
-|:------|:------------|:-------------------|:--------------------|
-| Flan-t5-small | rag1.0.py | 20% | - |
-| Flan-t5-base | rag1.0.py | 50% | 66% |
-| Flan-t5-large | rag1.0.py | 45% | 93% |
-| Flan-t5-small | rag2.0.py | 45% | - |
-| Flan-t5-base | rag2.0.py | 45% | 60% |
-| Flan-t5-large | rag2.0.py | 50% | 97% |
-| LLaMA-2-7B-chat | llama.py | 60% | 82s% |
+### 🛠️ Retrieval Strategy Enhancements
+
+- **Dynamic Top-K Retrieval**: Retrieves top 3 chunks relevant to the question using FAISS cosine similarity.
+- **Normalized Question Embedding**: Improves search consistency across question types and lengths.
+
+### 📚 Prompt Construction and Context Handling
+
+- **Structured Prompting**: Clear instructions like `"Answer the question based ONLY on the context below"` were used to reduce hallucinations.
+- **Dynamic Context Building (rag2.py)**: Chunks are added progressively until the token budget (~512–800 tokens) is reached. Prevents overloading the model with unnecessary context.
+- **Tokenizer-Level Truncation**: Ensures that truncation preserves semantic integrity by using the tokenizer, avoiding raw string slicing.
+
+### 🔒 Local Inference and Environment Controls
+
+- **Isolated Per-Question Execution**: No memory between questions. Each query starts with a clean context.
+- **Error-Safe Execution**: Known CPU issues (e.g., OpenMP duplication) are handled with environment flags.
+- **Model Switching**: With a one-line edit, developers can switch between `small`, `base`, `large`, or `llama` models depending on task and resources.
+
+### 📈 Performance Monitoring
+
+- Logs total retrieval and answering time per question.
+- Retrieval logs and answer logs are saved independently for reproducibility.
+
+---
 
 ## Outcome
 
-Delivered a clean, modular RAG system capable of working with multiple models and offline operation.
+- Fully offline, local RAG Q&A system successfully built and tested.
+- Demonstrated that meaningful document-grounded question answering can be achieved without any external APIs or cloud-based inference.
+- Maintained end-to-end traceability of retrieved context and generated answers.
+- Final average CPU response time:  
+  - ~15–30 seconds for Flan models  
+  - ~30+ seconds for LLaMA 7B quantized GGML model
 
 ---
+
+## Limitations and Hardware Constraints
+
+- **Local Development Environment**:
+  - No GPU usage (GTX 1050 Ti available but unused)
+  - 16GB RAM and limited storage
+- **Resulting Trade-Offs**:
+  - Only quantized models could fit in memory (no 13B or 65B LLaMA support)
+  - Inference time slower than GPU setups
+  - Flan-T5 performed reasonably well, but lacks deep reasoning found in large models like GPT-4 or Claude
+
+> **🔒 Design Tradeoff:**  
+> Offline inference was prioritized as per the assessment requirements — despite potential for better accuracy via APIs like OpenAI or Anthropic, these were deliberately excluded.
+
+---
+
+## Future Improvements and Production Scaling Ideas
+
+- **🚀 Hardware Upgrade**:
+  - Upgrading to a modern GPU (e.g., RTX 4090) and 64GB+ RAM would allow:
+    - Running full precision LLaMA models (7B+)
+    - Much faster answering (2–3 sec range)
+    - Fine-tuning capabilities
+
+- **🧠 Fine-Tuning**:
+  - Train Flan or LLaMA on Dr. X’s publications to create domain-adapted instruction-following models.
+  - Customize prompt formats for different publication types.
+
+- **🔎 Enhanced Retrieval**:
+  - Combine semantic retrieval with keyword matching (hybrid search)
+  - Introduce query rewriting for better chunk matching
+
+---
+
 
 # Engineering Enhancements and Optimization Choices
 
