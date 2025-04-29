@@ -155,27 +155,60 @@ This metadata-driven design ensures **traceability**, **easy reassembly**, and *
 ---
 
 
-# Phase 3: Embedding & Vector Database Construction
+## 🧩 Phase 3: Embedding & Vector Database Construction
 
-## Objective
+### 🎯 Objective
 
-Generate dense, normalized semantic embeddings for each chunk and store them in a FAISS vector database for fast similarity search.
-
-## Technologies Used
-- HuggingFace transformers (nomic-embed-text-v1)
-- faiss-cpu
-- torch, numpy
-
-## Approach
-- Mean pooling of hidden states.
-- L2-normalization of embeddings.
-- Separate storage of FAISS vector index and external metadata.
-- Full performance logging (tokens/sec) for embedding phase.
-
-## Outcome
-- Fully populated, locally-operational FAISS database ready for Retrieval-Augmented Generation (RAG).
+Generate dense, normalized semantic embeddings for each chunk and store them in a **FAISS** vector database to enable fast and accurate semantic similarity search — forming the core of the Retrieval-Augmented Generation (RAG) system.
 
 ---
+
+### ⚙️ Technologies Used
+
+- `HuggingFace Transformers` (`nomic-embed-text-v1`)
+- `faiss-cpu`
+- `torch`, `numpy`
+
+---
+
+### 🧠 Engineering Approach
+
+Phase 3 was dedicated to building an efficient and scalable vector-based retrieval foundation.
+
+#### 📚 Embedding Generation
+- Leveraged `nomic-embed-text-v1` model for generating efficient, general-purpose embeddings suitable for a wide range of scientific and technical domains.
+- Applied **mean pooling** over the last hidden states to obtain a dense and representative semantic vector for each chunk.
+
+#### 🔵 L2-Normalization for Stable Similarity Search
+- Embedding vectors were L2-normalized before indexing to ensure **stable cosine similarity** behavior during search.
+- This normalization improves retrieval robustness, particularly when dealing with variable-length input text.
+
+#### 🛠️ Vector Database Construction
+- FAISS (`faiss-cpu`) was selected to ensure fast, scalable, and offline semantic search capability.
+- **Separation of Storage**:
+  - FAISS index: stores only the raw vectors.
+  - External `metadata.json`: stores corresponding metadata (filename, page, chunk_id, and text).
+- This modular storage design promotes **easy future expansion**, **metadata refresh** without re-embedding, and **clear system maintainability**.
+
+> 💡 **Design Insight:** Separating embeddings from metadata aligns with best practices for scalable information retrieval systems, reducing database fragility and enhancing update flexibility.
+
+#### 📈 Performance Logging
+- Full performance metrics were recorded during the embedding process:
+  - Total tokens embedded
+  - Embedding time
+  - Tokens processed per second
+- These logs provide **transparent insight** into system efficiency and facilitate optimization if scaling up.
+
+---
+
+### ✅ Outcome
+
+- Successfully created a **fully populated FAISS database**, operational locally and optimized for RAG pipelines.
+- Built a **transparent, performance-logged embedding layer** that ensures future scalability and operational clarity.
+- Maintained full traceability and reproducibility through externalized metadata.
+
+---
+
 
 # Phase 4: RAG Q&A System Development
 
