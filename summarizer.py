@@ -1,10 +1,4 @@
-# ======================================================================================
-# 🟩 Batch Document Summarizer + ROUGE Evaluation + Performance Logging (PDF, DOCX, TXT)
-# --------------------------------------------------------------------------------------
-# This script summarizes all .pdf, .docx, and .txt files inside the ./input/ folder.
-# It saves summaries in ./summaries/, ROUGE metrics in ./rouge_metrics/, and performance in performance_log.txt.
-# Model used: LaMini-Flan-T5-248M (from ./models/ folder)
-# ======================================================================================
+# Phase 6 - Document Summarizer equiped with ROUGE Evaluation and Performance Logging (PDF, DOCX, TXT)
 
 import os
 import time
@@ -15,18 +9,18 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration, pipeline
 import torch
 from evaluate import load
 
-# 📂 Define input, output, and model directories
+# Define input, output, and model directories
 INPUT_DIR = "input"
 SUMMARY_DIR = "summaries"
 ROUGE_DIR = "rouge_metrics"
-MODEL_DIR = "models/LaMini-Flan-T5-248M"
+MODEL_DIR = "models/LaMini-Flan-T5-248M"    # Can be replaced with your model of choice palced inside the models directory 
 
-# 🧱 Create folders if they don't exist
+# Create folders if they don't exist
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(SUMMARY_DIR, exist_ok=True)
 os.makedirs(ROUGE_DIR, exist_ok=True)
 
-# 🤖 Load model and tokenizer
+# Load model and tokenizer
 tokenizer = T5Tokenizer.from_pretrained(MODEL_DIR)
 base_model = T5ForConditionalGeneration.from_pretrained(MODEL_DIR, device_map='auto', torch_dtype=torch.float32)
 rouge = load("rouge")
@@ -37,7 +31,7 @@ def file_preprocessing(file_path):
         loader = PyPDFLoader(file_path)
     elif file_path.endswith(".docx"):
         loader = Docx2txtLoader(file_path)
-    elif file_path.endswith(".txt"):
+    elif file_path.endswith(".txt"):            # Mainly using txt at the moment as we have it already extracted from Phase 1
         loader = TextLoader(file_path, encoding="utf-8")
     else:
         raise ValueError(f"Unsupported file type: {file_path}")
@@ -50,7 +44,7 @@ def file_preprocessing(file_path):
         final_texts += text.page_content
     return final_texts
 
-# 🧠 LLM summarization pipeline
+# LLM summarization pipeline
 def llm_pipeline(text):
     summarizer = pipeline(
         'summarization',
