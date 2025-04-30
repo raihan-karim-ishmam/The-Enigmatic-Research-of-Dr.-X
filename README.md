@@ -292,7 +292,8 @@ Develop a flexible, scalable, and local Retrieval-Augmented Generation (RAG) sys
 
 ### 🔒 Local Inference and Environment Controls
 
-- **Isolated Per-Question Execution**: No memory between questions. Each query starts with a clean context.
+- **Isolated Per-Question Execution**: No memory between questions in Flan-based versions.
+- **Contextual History (LLaMA version)**: Maintains a memory of the last 3 questions and answers for continuity within LLaMA prompts.
 - **Error-Safe Execution**: Known CPU issues (e.g., OpenMP duplication) are handled with environment flags.
 - **Model Switching**: With a one-line edit, developers can switch between `small`, `base`, `large`, or `llama` models depending on task and resources.
 
