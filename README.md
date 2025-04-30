@@ -1,7 +1,7 @@
 # The Enigmatic Research of Dr. X  
 *AI-Powered NLP Pipeline for OSOS*
 
-![Python](https://img.shields.io/badge/Python-3.10-blue) ![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow) ![FAISS](https://img.shields.io/badge/Vector-Database-FAISS-blue) ![Local-NLP](https://img.shields.io/badge/Deployment-Local_Only-green) ![NLP](https://img.shields.io/badge/Field-NLP-red)
+![Python](https://img.shields.io/badge/Python-3.10-blue) ![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow) ![Local-NLP](https://img.shields.io/badge/Deployment-Local_Only-green) ![NLP](https://img.shields.io/badge/Field-NLP-red)
 
 ---
 
