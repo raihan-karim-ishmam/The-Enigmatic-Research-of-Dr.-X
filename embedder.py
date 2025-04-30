@@ -1,4 +1,4 @@
-# Embedding and Storing Chunk Metadata in FAISS
+# Phase 3 - Embedding and Storing Chunk Metadata in FAISS
 
 import os
 import json
